@@ -1,4 +1,3 @@
-import sys
 import os
 import requests
 import cloudscraper
@@ -6,7 +5,6 @@ from bs4 import BeautifulSoup
 from urllib.parse import urljoin, urlparse
 import concurrent.futures
 import time
-from pathlib import Path
 import re
 import random
 import json
