@@ -2,5 +2,12 @@ __pycache__/
 
 .env
 
-
 settings.json
+
+build/
+
+dist/
+
+Thumbs.db
+
+main.spec
