@@ -3,7 +3,7 @@ import os
 from PyQt5.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout, 
                            QHBoxLayout, QComboBox, QLineEdit, QPushButton, 
                            QTextEdit, QLabel, QFileDialog, QMessageBox)
-from PyQt5.QtCore import QThread, pyqtSignal
+from PyQt5.QtCore import QThread, pyqtSignal, QTimer
 from PyQt5.QtGui import QColor, QIcon, QPalette, QFont
 from PyQt5.QtCore import Qt
 
@@ -21,37 +21,103 @@ class DownloaderThread(QThread):
         self.url = url
         self.output_folder = output_folder
         self.source = source
-        print(f"select option: {source}")
-        if(source == 'TruyenQQ' or source == 'Nettruyen'):
-            self.downloader = MangaDownloader(logger_callback=self.progress_signal.emit)
-            self.downloader.setup_website(self.source)
-        elif(source == 'ln.hako.vn'):
-            self.downloader = LightNovel(logger_callback=self.progress_signal.emit);
-        else:
-            self.downloader = TruyenDexImageDownloader(logger_callback=self.progress_signal.emit)
-            self.downloader.setup_title(self.source)
+        self.is_running = True
 
     def run(self):
         try:
+            if not self.is_running:
+                return
+
             original_cwd = os.getcwd()
             os.chdir(self.output_folder)
 
-            if(self.source in ["ln.hako.vn"]):
-                print("light novel", self.url)
+            if self.source == 'TruyenQQ' or self.source == 'Nettruyen':
+                self.downloader = MangaDownloader(logger_callback=self.progress_signal.emit)
+                self.downloader.setup_website(self.source)
+            elif self.source == 'ln.hako.vn':
+                self.downloader = LightNovel(logger_callback=self.progress_signal.emit)
+            else:
+                self.downloader = TruyenDexImageDownloader(logger_callback=self.progress_signal.emit)
+                self.downloader.setup_title(self.source)
+
+            if self.source == "ln.hako.vn":
                 self.downloader.download_lightNovel(self.url)
             else:
                 self.downloader.download_manga(self.url)
 
             os.chdir(original_cwd)
-            self.finished_signal.emit()
+            
+            if self.is_running:
+                self.finished_signal.emit()
+                
         except Exception as e:
-            self.error_signal.emit(str(e))
+            if self.is_running:
+                self.error_signal.emit(str(e))
+        finally:
+            self.is_running = False
+
+    def stop(self):
+        self.is_running = False
+        self.wait()
 
 class MangaDownloaderGUI(QMainWindow):
     def __init__(self):
         super().__init__()
         self.init_ui()
         self.downloader_thread = None
+        self.closing = False
+
+        self.timer = QTimer()
+        self.timer.timeout.connect(lambda: None)
+        self.timer.start(500)
+
+    def closeEvent(self, event):
+        self.closing = True
+        if self.downloader_thread and self.downloader_thread.isRunning():
+            self.stop_download()
+        event.accept()
+
+    def start_download(self):
+        if not self.validate_inputs():
+            return
+
+        self.toggle_ui_elements(False)
+        
+        self.downloader_thread = DownloaderThread(
+            self.url_input.text().strip(),
+            self.folder_input.text().strip(),
+            self.source_combo.currentText()
+        )
+        self.downloader_thread.progress_signal.connect(self.update_progress)
+        self.downloader_thread.error_signal.connect(self.handle_error)
+        self.downloader_thread.finished_signal.connect(self.download_finished)
+        self.downloader_thread.start()
+
+    def stop_download(self):
+        if self.downloader_thread and self.downloader_thread.isRunning():
+            self.downloader_thread.stop()
+            self.update_progress("Download stopped by user")
+            if not self.closing:
+                self.download_finished()
+
+    def validate_inputs(self):
+        url = self.url_input.text().strip()
+        output_folder = self.folder_input.text().strip()
+
+        if not url:
+            QMessageBox.warning(self, "Error", "Please enter a manga URL")
+            return False
+
+        if not output_folder:
+            QMessageBox.warning(self, "Error", "Please select an output folder")
+            return False
+
+        return True
+
+    def download_finished(self):
+        if not self.closing:
+            self.toggle_ui_elements(True)
+            QMessageBox.information(self, "Complete", "Download process completed")
 
     def init_ui(self):
         self.setWindowIcon(QIcon('Haikulogo.ico'))
@@ -175,7 +241,11 @@ class MangaDownloaderGUI(QMainWindow):
         self.stop_button.setEnabled(False)
 
 if __name__ == '__main__':
-    app = QApplication(sys.argv)
-    window = MangaDownloaderGUI()
-    window.show()
-    sys.exit(app.exec_())
+    try:
+        app = QApplication(sys.argv)
+        window = MangaDownloaderGUI()
+        window.show()
+        sys.exit(app.exec_())
+    except Exception as e:
+        QMessageBox.critical(None, "Fatal Error", f"An unexpected error occurred: {str(e)}")
+        sys.exit(1)

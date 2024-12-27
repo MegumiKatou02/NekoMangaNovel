@@ -10,4 +10,4 @@ dist/
 
 Thumbs.db
 
-main.spec
+*.spec

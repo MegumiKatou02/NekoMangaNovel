@@ -16,22 +16,24 @@ from datetime import datetime
 
 class MangaDownloader:
     def __init__(self, logger_callback=None):
-        self.image_select = "img.lozad"
-        self.chapters_select = ".col-xs-5.chapter a[href]" #nettruyen auto :3
-
+        self.image_select = "img.lozad" # mac dinh la nettruyen :3
+        self.chapters_select = ".col-xs-5.chapter a[href]"
         self.setup_logging(logger_callback)
         
         self.download_queue = Queue()
         self.failed_queue = Queue()
         self.lock = Lock()
         
-        self.ua = fake_useragent.UserAgent()
+        self.user_agents = [
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36',
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:120.0) Gecko/20100101 Firefox/120.0',
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Edge/120.0.0.0'
+        ]
         
         self.proxies = []
-        
         self.load_cookies()
         self.load_progress()
-        
         self.scraper = cloudscraper.create_scraper(
             browser={
                 'browser': 'chrome',
@@ -39,6 +41,7 @@ class MangaDownloader:
                 'mobile': False
             }
         )
+
     def setup_website(self, option: str): 
         if(option == 'Nettruyen'):
             self.image_select = "img.lozad"
@@ -97,7 +100,7 @@ class MangaDownloader:
 
     def get_headers(self):
         return {
-            'User-Agent': self.ua.random,
+            'User-Agent': random.choice(self.user_agents),
             'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
             'Accept-Language': 'en-US,en;q=0.5',
             'Connection': 'keep-alive',
@@ -187,7 +190,6 @@ class MangaDownloader:
             return False
 
     def process_chapter(self, chapter_url, manga_folder):
-        """Xử lý một chương truyện"""
         if chapter_url in self.progress and self.progress[chapter_url] == 'completed':
             self.logger.info(f"Chapter already downloaded: {chapter_url}")
             return
@@ -240,7 +242,6 @@ class MangaDownloader:
             self.failed_queue.put((chapter_url, manga_folder))
 
     def retry_failed(self):
-        """Thử lại các download thất bại"""
         while not self.failed_queue.empty():
             try:
                 item = self.failed_queue.get()
@@ -256,7 +257,7 @@ class MangaDownloader:
                 self.failed_queue.task_done()
 
     def download_manga(self, manga_url):
-        """Download toàn bộ manga"""
+        print(manga_url + "\n\n")
         try:
             self.logger.info(f"Starting download from: {manga_url}")
             
