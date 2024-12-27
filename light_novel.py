@@ -42,8 +42,3 @@ class LightNovel:
                     print(f"Saved to: {filename}")
             else:
                 print("No link found for chapter.")
-
-# if __name__ == "__main__":
-#     ln_url = 'https://ln.hako.vn/truyen/11727-the-villainess-who-only-had-100-days-to-live-had-fun-every-day'
-#     light_novel = LightNovel()
-#     light_novel.download_lightNovel(ln_url)
