@@ -45,7 +45,7 @@ class MangaDownloaderGUI(QMainWindow):
         self.downloader_thread = None
 
     def init_ui(self):
-        self.setWindowTitle('Manga Downloader')
+        self.setWindowTitle('Neko Manga Novel Downloader')
         self.setGeometry(100, 100, 800, 600)
 
         font = QFont('Arial', 11)
