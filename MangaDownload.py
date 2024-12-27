@@ -18,6 +18,9 @@ from datetime import datetime
 
 class MangaDownloader:
     def __init__(self, logger_callback=None):
+        self.image_select = "img.lozad"
+        self.chapters_select = ".col-xs-5.chapter a[href]" #nettruyen auto :3
+
         self.setup_logging(logger_callback)
         
         self.download_queue = Queue()
@@ -38,6 +41,14 @@ class MangaDownloader:
                 'mobile': False
             }
         )
+    def setup_website(self, option: str): 
+        if(option == 'Nettruyen'):
+            self.image_select = "img.lozad"
+            self.chapters_select = ".col-xs-5.chapter a[href]"
+        if(option == 'TruyenQQ'):
+            self.image_select = "img.lazy"
+            self.chapters_select = "div.works-chapter-list a[href]"
+        
         
     def setup_logging(self, callback=None):
         class CallbackHandler(logging.Handler):
@@ -197,7 +208,7 @@ class MangaDownloader:
             chapter_folder = os.path.join(manga_folder, chapter_name)
             os.makedirs(chapter_folder, exist_ok=True)
             
-            images = soup.select('img.lozad')
+            images = soup.select(self.image_select)
             total_images = len(images)
             downloaded_images = 0
             
@@ -263,7 +274,7 @@ class MangaDownloader:
             manga_folder = os.path.join(os.getcwd(), manga_name)
             os.makedirs(manga_folder, exist_ok=True)
             
-            chapters = soup.select('.col-xs-5.chapter a[href]')
+            chapters = soup.select(self.chapters_select)
             chapter_urls = [urljoin(manga_url, chapter.get('href')) for chapter in chapters]
             
             with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
