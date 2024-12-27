@@ -8,7 +8,7 @@ from PyQt5.QtGui import QColor, QPalette, QFont
 from PyQt5.QtCore import Qt
 
 from MangaDownload import MangaDownloader
-from TruyenDex import TruyenDexImageDownloader
+from MangaDex import TruyenDexImageDownloader
 
 class DownloaderThread(QThread):
     progress_signal = pyqtSignal(str)
