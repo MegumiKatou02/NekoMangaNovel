@@ -8,7 +8,8 @@ from PyQt5.QtGui import QColor, QPalette, QFont
 from PyQt5.QtCore import Qt
 
 from MangaDownload import MangaDownloader
-from TruyenDex import TruyenDexImageDownloader
+from MangaDex import TruyenDexImageDownloader
+from light_novel import LightNovel
 
 class DownloaderThread(QThread):
     progress_signal = pyqtSignal(str)
@@ -24,6 +25,8 @@ class DownloaderThread(QThread):
         if(source == 'TruyenQQ' or source == 'Nettruyen'):
             self.downloader = MangaDownloader(logger_callback=self.progress_signal.emit)
             self.downloader.setup_website(self.source)
+        elif(source == 'ln.hako.vn'):
+            self.downloader = LightNovel(logger_callback=self.progress_signal.emit);
         else:
             self.downloader = TruyenDexImageDownloader(logger_callback=self.progress_signal.emit)
 
@@ -32,8 +35,12 @@ class DownloaderThread(QThread):
             original_cwd = os.getcwd()
             os.chdir(self.output_folder)
 
-            self.downloader.download_manga(self.url)
-            
+            if(self.source in ["ln.hako.vn"]):
+                print("light novel", self.url)
+                self.downloader.download_lightNovel(self.url)
+            else:
+                self.downloader.download_manga(self.url)
+
             os.chdir(original_cwd)
             self.finished_signal.emit()
         except Exception as e:
@@ -60,7 +67,7 @@ class MangaDownloaderGUI(QMainWindow):
         source_label = QLabel('Source:')
         source_label.setStyleSheet('font-weight: bold;')
         self.source_combo = QComboBox()
-        self.source_combo.addItems(['MangaDex', 'Nettruyen', 'TruyenQQ', 'TruyenDex'])
+        self.source_combo.addItems(['MangaDex', 'Nettruyen', 'TruyenQQ', 'TruyenDex', 'ln.hako.vn'])
         source_layout.addWidget(source_label)
         source_layout.addWidget(self.source_combo)
         layout.addLayout(source_layout)

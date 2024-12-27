@@ -1,4 +1,5 @@
 import os
+import re
 import requests
 
 class TruyenDexImageDownloader:
@@ -37,7 +38,14 @@ class TruyenDexImageDownloader:
             self.logger_callback(f"Failed to fetch images for chapter {chapter_id}. Status code: {response.status_code}")
             return []
 
-    def download_manga(self, manga_id):
+    def download_manga(self, manga_url):
+        manga_id_match = re.search(r"/title/([a-f0-9\-]+)", manga_url)
+        if not manga_id_match:
+            self.logger_callback("Invalid manga URL.")
+            return
+    
+        manga_id = manga_id_match.group(1)
+
         self.logger_callback(f"Starting download for manga: {manga_id}")
 
         chapters = self.fetch_chapters(manga_id)
