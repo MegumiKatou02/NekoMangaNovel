@@ -28,14 +28,11 @@ class DownloaderThread(QThread):
 
     def run(self):
         try:
-            # Change working directory to output folder
             original_cwd = os.getcwd()
             os.chdir(self.output_folder)
 
-            # Start download
             self.downloader.download_manga(self.url)
             
-            # Restore original working directory
             os.chdir(original_cwd)
             self.finished_signal.emit()
         except Exception as e:
@@ -51,16 +48,13 @@ class MangaDownloaderGUI(QMainWindow):
         self.setWindowTitle('Manga Downloader')
         self.setGeometry(100, 100, 800, 600)
 
-        # Set custom font and background color
         font = QFont('Arial', 11)
         self.setFont(font)
 
-        # Create central widget and main layout
         central_widget = QWidget()
         self.setCentralWidget(central_widget)
         layout = QVBoxLayout(central_widget)
 
-        # Source selection
         source_layout = QHBoxLayout()
         source_label = QLabel('Source:')
         source_label.setStyleSheet('font-weight: bold;')
@@ -70,7 +64,6 @@ class MangaDownloaderGUI(QMainWindow):
         source_layout.addWidget(self.source_combo)
         layout.addLayout(source_layout)
 
-        # URL input
         url_layout = QHBoxLayout()
         url_label = QLabel('URL:')
         url_label.setStyleSheet('font-weight: bold;')
@@ -81,7 +74,6 @@ class MangaDownloaderGUI(QMainWindow):
         url_layout.addWidget(self.url_input)
         layout.addLayout(url_layout)
 
-        # Output folder selection
         folder_layout = QHBoxLayout()
         folder_label = QLabel('Output Folder:')
         folder_label.setStyleSheet('font-weight: bold;')
@@ -96,7 +88,6 @@ class MangaDownloaderGUI(QMainWindow):
         folder_layout.addWidget(self.folder_button)
         layout.addLayout(folder_layout)
 
-        # Control buttons
         button_layout = QHBoxLayout()
         self.download_button = QPushButton('Download')
         self.download_button.setStyleSheet('background-color: #4CAF50; color: white; padding: 10px; border-radius: 5px;')
@@ -116,7 +107,6 @@ class MangaDownloaderGUI(QMainWindow):
         button_layout.addWidget(self.stop_button)
         layout.addLayout(button_layout)
 
-        # Progress log
         self.log_output = QTextEdit()
         self.log_output.setReadOnly(True)
         self.log_output.setStyleSheet('background-color: #f0f0f0; padding: 5px;')
@@ -140,14 +130,12 @@ class MangaDownloaderGUI(QMainWindow):
             QMessageBox.warning(self, "Error", "Please select an output folder")
             return
 
-        # Disable controls during download
         self.download_button.setEnabled(False)
         self.source_combo.setEnabled(False)
         self.url_input.setEnabled(False)
         self.folder_button.setEnabled(False)
         self.stop_button.setEnabled(True)
 
-        # Create and start download thread
         self.downloader_thread = DownloaderThread(url, output_folder, source)
         self.downloader_thread.progress_signal.connect(self.update_progress)
         self.downloader_thread.error_signal.connect(self.handle_error)
@@ -170,7 +158,6 @@ class MangaDownloaderGUI(QMainWindow):
         self.download_finished()
 
     def download_finished(self):
-        # Re-enable controls
         self.download_button.setEnabled(True)
         self.source_combo.setEnabled(True)
         self.url_input.setEnabled(True)
