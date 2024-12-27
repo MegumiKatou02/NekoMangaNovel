@@ -4,7 +4,7 @@ from PyQt5.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout,
                            QHBoxLayout, QComboBox, QLineEdit, QPushButton, 
                            QTextEdit, QLabel, QFileDialog, QMessageBox)
 from PyQt5.QtCore import QThread, pyqtSignal
-from PyQt5.QtGui import QColor, QPalette, QFont
+from PyQt5.QtGui import QColor, QIcon, QPalette, QFont
 from PyQt5.QtCore import Qt
 
 from MangaDownload import MangaDownloader
@@ -29,6 +29,7 @@ class DownloaderThread(QThread):
             self.downloader = LightNovel(logger_callback=self.progress_signal.emit);
         else:
             self.downloader = TruyenDexImageDownloader(logger_callback=self.progress_signal.emit)
+            self.downloader.setup_title(self.source)
 
     def run(self):
         try:
@@ -53,6 +54,7 @@ class MangaDownloaderGUI(QMainWindow):
         self.downloader_thread = None
 
     def init_ui(self):
+        self.setWindowIcon(QIcon('Haikulogo.ico'))
         self.setWindowTitle('Neko Manga Novel Downloader')
         self.setGeometry(100, 100, 800, 600)
 

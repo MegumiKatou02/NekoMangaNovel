@@ -4,7 +4,14 @@ import requests
 
 class TruyenDexImageDownloader:
     def __init__(self, logger_callback):
+        self.title = "title"
         self.logger_callback = logger_callback
+
+    def setup_title(self, option: str):
+        if(option == "MangaDex"):
+            self.title = "title"
+        if(option == "TruyenDex"):
+            self.title = "truyen-tranh"
 
     def fetch_chapters(self, manga_id):
         """Lấy danh sách các chapter của manga từ MangaDex API."""
@@ -39,7 +46,7 @@ class TruyenDexImageDownloader:
             return []
 
     def download_manga(self, manga_url):
-        manga_id_match = re.search(r"/title/([a-f0-9\-]+)", manga_url)
+        manga_id_match = re.search(rf"/{self.title}/([a-f0-9\-]+)", manga_url)
         if not manga_id_match:
             self.logger_callback("Invalid manga URL.")
             return
