@@ -23,6 +23,7 @@ class DownloaderThread(QThread):
         print(f"select option: {source}")
         if(source == 'TruyenQQ' or source == 'Nettruyen'):
             self.downloader = MangaDownloader(logger_callback=self.progress_signal.emit)
+            self.downloader.setup_website(self.source)
         else:
             self.downloader = TruyenDexImageDownloader(logger_callback=self.progress_signal.emit)
 
