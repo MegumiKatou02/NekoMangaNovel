@@ -11,6 +11,8 @@ from MangaDownload import MangaDownloader
 from MangaDex import TruyenDexImageDownloader
 from light_novel import LightNovel
 
+import version
+
 class DownloaderThread(QThread):
     progress_signal = pyqtSignal(str)
     finished_signal = pyqtSignal()
@@ -31,16 +33,17 @@ class DownloaderThread(QThread):
             original_cwd = os.getcwd()
             os.chdir(self.output_folder)
 
-            if self.source == 'TruyenQQ' or self.source == 'Nettruyen':
+            if self.source in ['TruyenQQ', 'Nettruyen']:
                 self.downloader = MangaDownloader(logger_callback=self.progress_signal.emit)
                 self.downloader.setup_website(self.source)
-            elif self.source == 'ln.hako.vn':
+            elif self.source in ['ln.hako.vn', 'docln.net']:
                 self.downloader = LightNovel(logger_callback=self.progress_signal.emit)
-            else:
+                self.downloader.setup_domain(self.source)
+            else: # MangaDex
                 self.downloader = TruyenDexImageDownloader(logger_callback=self.progress_signal.emit)
                 self.downloader.setup_title(self.source)
 
-            if self.source == "ln.hako.vn":
+            if self.source in ['ln.hako.vn', 'docln.net']:
                 self.downloader.download_lightNovel(self.url)
             else:
                 self.downloader.download_manga(self.url)
@@ -121,7 +124,7 @@ class MangaDownloaderGUI(QMainWindow):
 
     def init_ui(self):
         self.setWindowIcon(QIcon('Haikulogo.ico'))
-        self.setWindowTitle('Neko Manga Novel Downloader')
+        self.setWindowTitle(f'Neko Manga Novel Downloader {version.VERSION}')
         self.setGeometry(100, 100, 800, 600)
 
         font = QFont('Arial', 11)
@@ -135,7 +138,7 @@ class MangaDownloaderGUI(QMainWindow):
         source_label = QLabel('Source:')
         source_label.setStyleSheet('font-weight: bold;')
         self.source_combo = QComboBox()
-        self.source_combo.addItems(['MangaDex', 'Nettruyen', 'TruyenQQ', 'TruyenDex', 'ln.hako.vn'])
+        self.source_combo.addItems(['MangaDex', 'TruyenDex', 'Nettruyen', 'TruyenQQ', 'ln.hako.vn', 'docln.net'])
         source_layout.addWidget(source_label)
         source_layout.addWidget(self.source_combo)
         layout.addLayout(source_layout)
