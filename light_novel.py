@@ -6,8 +6,13 @@ import os
 class LightNovel:
     def __init__(self, logger_callback=None):
         self.logger_callback = logger_callback or print
+        self.domain = "ln.hako.vn"
+
+    def setup_domain(self, domain):
+        self.domain = domain
 
     def download_lightNovel(self, light_novel_url):
+        print(self.domain)
         ln_folder = os.path.join(os.getcwd(), "LightNovel")
         os.makedirs(ln_folder, exist_ok=True)
 
@@ -22,7 +27,7 @@ class LightNovel:
                 title = link.get('title')
                 title = re.sub(r'[\/:*?"<>|]', '', title) 
 
-                chapter_url = "https://ln.hako.vn" + link.get('href')
+                chapter_url = f"https://{self.domain}" + link.get('href')
                 self.logger_callback(f"Downloading chapter: {title} - URL: {chapter_url}")
 
                 chapter_response = requests.get(chapter_url)
