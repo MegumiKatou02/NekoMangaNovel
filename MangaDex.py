@@ -60,7 +60,11 @@ class TruyenDexImageDownloader:
             return
 
         manga_folder = os.path.join(os.getcwd(), f"manga_{manga_id}")
-        os.makedirs(manga_folder, exist_ok=True)
+        # os.makedirs(manga_folder, exist_ok=True)
+        try:
+            os.makedirs(manga_folder, exist_ok=True)
+        except PermissionError:
+            self.logger.error(f"Permission denied when creating directory: {manga_folder}")
 
         for volume, chapter, chapter_id in chapters:
             self.logger_callback(f"Downloading volume {volume}, chapter {chapter}...")
