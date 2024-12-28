@@ -123,7 +123,10 @@ class MangaDownloaderGUI(QMainWindow):
             QMessageBox.information(self, "Complete", "Download process completed")
 
     def init_ui(self):
-        self.setWindowIcon(QIcon('Haikulogo.ico'))
+        # self.setWindowIcon(QIcon('Haikulogo.ico'))
+        icon_path = os.path.join(os.path.dirname(__file__), 'Haikulogo.ico')
+        self.setWindowIcon(QIcon(icon_path))
+        
         self.setWindowTitle(f'Neko Manga Novel Downloader {version.VERSION}')
         self.setGeometry(100, 100, 800, 600)
 
