@@ -61,6 +61,8 @@ class DownloaderThread(QThread):
 
     def stop(self):
         self.is_running = False
+        if hasattr(self.downloader, 'stop'):
+            self.downloader.stop()
         self.wait()
 
 class MangaDownloaderGUI(QMainWindow):
