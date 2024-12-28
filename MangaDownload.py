@@ -23,6 +23,8 @@ class MangaDownloader:
         self.download_queue = Queue()
         self.failed_queue = Queue()
         self.lock = Lock()
+        self.is_running = True
+        self.executor = None 
         
         self.user_agents = [
             'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
@@ -41,6 +43,11 @@ class MangaDownloader:
                 'mobile': False
             }
         )
+
+    def stop(self):
+        self.is_running = False
+        if self.executor:
+            self.executor.shutdown(wait=False) 
 
     def setup_website(self, option: str): 
         if(option == 'Nettruyen'):
@@ -190,6 +197,9 @@ class MangaDownloader:
             return False
 
     def process_chapter(self, chapter_url, manga_folder):
+        if not self.is_running:
+            return
+
         if chapter_url in self.progress and self.progress[chapter_url] == 'completed':
             self.logger.info(f"Chapter already downloaded: {chapter_url}")
             return
@@ -213,6 +223,9 @@ class MangaDownloader:
             downloaded_images = 0
             
             for idx, img in enumerate(images, 1):
+                if not self.is_running:
+                    return
+                
                 img_url = img.get('src') or img.get('data-src')
                 if not img_url:
                     continue
@@ -238,8 +251,9 @@ class MangaDownloader:
                 self.logger.warning(f"Incomplete chapter: {chapter_name} ({downloaded_images}/{total_images})")
                 
         except Exception as e:
-            self.logger.error(f"Error processing chapter {chapter_url}: {str(e)}")
-            self.failed_queue.put((chapter_url, manga_folder))
+            if self.is_running:
+                self.logger.error(f"Error processing chapter {chapter_url}: {str(e)}")
+                self.failed_queue.put((chapter_url, manga_folder))
 
     def retry_failed(self):
         while not self.failed_queue.empty():
@@ -259,6 +273,7 @@ class MangaDownloader:
     def download_manga(self, manga_url):
         print(manga_url + "\n\n")
         try:
+            self.is_running = True 
             self.logger.info(f"Starting download from: {manga_url}")
             
             response = self.download_with_retry(manga_url)
@@ -277,19 +292,30 @@ class MangaDownloader:
             chapter_urls = [urljoin(manga_url, chapter.get('href')) for chapter in chapters]
             
             with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
-                futures = [
-                    executor.submit(self.process_chapter, chapter_url, manga_folder)
-                    for chapter_url in chapter_urls
-                ]
-                concurrent.futures.wait(futures)
+                self.executor = executor 
+                futures = []
+                for chapter_url in chapter_urls:
+                    if not self.is_running:
+                        break
+                    futures.append(
+                        executor.submit(self.process_chapter, chapter_url, manga_folder)
+                    )
+                
+                if futures:
+                    concurrent.futures.wait(futures)
             
-            self.retry_failed()
-            
-            with open('cookies.json', 'w') as f:
-                json.dump(self.cookies, f)
+            if self.is_running: 
+                self.retry_failed()
+                with open('cookies.json', 'w') as f:
+                    json.dump(self.cookies, f)
+
+            self.logger.info("Download process ended")
             
             self.logger.info(f"Download completed: {manga_folder}")
             
         except Exception as e:
-            self.logger.error(f"Error: {str(e)}")
-            raise
+            if self.is_running:
+                self.logger.error(f"Error: {str(e)}")
+                raise
+        finally:
+            self.executor = None 
