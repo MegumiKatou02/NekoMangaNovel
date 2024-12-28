@@ -19,7 +19,7 @@ class LightNovel:
         try:
             os.makedirs(ln_folder, exist_ok=True)
         except PermissionError:
-            self.logger.error(f"Permission denied when creating directory: {ln_folder}")
+            self.logger_callback(f"Permission denied when creating directory: {ln_folder}")
 
         response = requests.get(light_novel_url)
         soup = BeautifulSoup(response.text, 'html.parser')
