@@ -5,7 +5,7 @@ import os
 
 class LightNovel:
     def __init__(self, logger_callback=None):
-        self.logger_callback = logger_callback
+        self.logger_callback = logger_callback or print
 
     def download_lightNovel(self, light_novel_url):
         ln_folder = os.path.join(os.getcwd(), "LightNovel")
@@ -23,14 +23,14 @@ class LightNovel:
                 title = re.sub(r'[\/:*?"<>|]', '', title) 
 
                 chapter_url = "https://ln.hako.vn" + link.get('href')
-                print(f"Downloading chapter: {title} - URL: {chapter_url}")
+                self.logger_callback(f"Downloading chapter: {title} - URL: {chapter_url}")
 
                 chapter_response = requests.get(chapter_url)
                 chapter_soup = BeautifulSoup(chapter_response.text, 'html.parser')
 
                 filename = os.path.join(ln_folder, f"{title}.txt")
                 with open(filename, 'w', encoding='utf-8') as file:
-                    txt = f"{title}\n\n"  # Tiêu đề chương
+                    txt = f"{title}\n\n"
                     for element in chapter_soup.find_all(id=True):
                         try:
                             id_num = int(element['id']) 
@@ -39,6 +39,6 @@ class LightNovel:
                             pass
                     file.write(txt)
 
-                    print(f"Saved to: {filename}")
+                    self.logger_callback(f"Saved to: {filename}")
             else:
-                print("No link found for chapter.")
+                self.logger_callback("No link found for chapter.")
