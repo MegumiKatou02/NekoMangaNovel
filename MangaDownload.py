@@ -286,7 +286,12 @@ class MangaDownloader:
             manga_name = manga_name.text if manga_name else "manga"
             manga_name = self.sanitize_filename(manga_name)
             manga_folder = os.path.join(os.getcwd(), manga_name)
-            os.makedirs(manga_folder, exist_ok=True)
+            # os.makedirs(manga_folder, exist_ok=True)
+
+            try:
+                os.makedirs(manga_folder, exist_ok=True)
+            except PermissionError:
+                self.logger.error(f"Permission denied when creating directory: {manga_folder}")
             
             chapters = soup.select(self.chapters_select)
             chapter_urls = [urljoin(manga_url, chapter.get('href')) for chapter in chapters]
