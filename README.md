@@ -3,8 +3,10 @@
 
 > [!WARNING]
 > **The image file may encounter errors during the download process, and some images failing to display is often due to issues from the website**
->
+> **When choosing Nettruyen or TruyenQQ, if the download isn't complete but the app is closed, open Task Manager and end the task to stop it completely**
+> 
 > **File ảnh có thể bị lỗi trong quá trình tải xuống, một số ảnh không thể hiện thị thường là lỗi từ trang web**
+> **Khi lựa chọn Nettruyen hoặc TruyenQQ nếu truyện chưa tải xong mà đóng app thì hãy mởTask Manager và end task để đóng hoàn toàn**
 
 > [!TIP]
 > It is recommended to choose MangaDex or TruyenDex because the MangaDex API provides an easy way to retrieve manga
