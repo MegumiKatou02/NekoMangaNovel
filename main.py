@@ -195,6 +195,30 @@ class MangaDownloaderGUI(QMainWindow):
         self.log_output.setStyleSheet('background-color: #f0f0f0; padding: 5px;')
         layout.addWidget(self.log_output)
 
+        self.setStyleSheet("""
+            QMainWindow {
+                background-color: #f8f9fa;
+            }
+            QLabel {
+                font-weight: bold;
+                font-size: 14px;
+            }
+            QLineEdit, QTextEdit {
+                background-color: #ffffff;
+                padding: 5px;
+                border-radius: 5px;
+            }
+            QPushButton {
+                background-color: #4CAF50;
+                color: white;
+                padding: 10px;
+                border-radius: 5px;
+            }
+            QPushButton:hover {
+                background-color: #45a049;
+            }
+        """)
+
     def select_output_folder(self):
         folder = QFileDialog.getExistingDirectory(self, "Select Output Directory")
         if folder:
